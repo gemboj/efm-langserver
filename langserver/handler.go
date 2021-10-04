@@ -60,6 +60,7 @@ type Language struct {
 	LintCategoryMap    map[string]string `yaml:"lint-category-map" json:"lintCategoryMap"`
 	LintSource         string            `yaml:"lint-source" json:"lintSource"`
 	LintSeverity       int               `yaml:"lint-severity" json:"lintSeverity"`
+	LintDir            bool              `yaml:"lint-dir" json:"lintDir"`
 	FormatCommand      string            `yaml:"format-command" json:"formatCommand"`
 	FormatStdin        bool              `yaml:"format-stdin" json:"formatStdin"`
 	SymbolCommand      string            `yaml:"symbol-command" json:"symbolCommand"`
@@ -366,8 +367,13 @@ func (h *langHandler) lint(ctx context.Context, uri DocumentURI) ([]Diagnostic, 
 		}
 
 		command := config.LintCommand
-		if !config.LintStdin && !strings.Contains(command, "${INPUT}") {
-			command = command + " ${INPUT}"
+		if !config.LintStdin && !strings.Contains(command, "${INPUT}") && !strings.Contains(command, "${INPUT_DIR}") {
+			if config.LintDir {
+				command = command + " ${INPUT_DIR}"
+			} else {
+				command = command + " ${INPUT}"
+			}
+
 		}
 		rootPath := h.findRootPath(fname, config)
 		command = replaceCommandInputFilename(command, fname, rootPath)
@@ -424,6 +430,10 @@ func (h *langHandler) lint(ctx context.Context, uri DocumentURI) ([]Diagnostic, 
 		scanner := efms.NewScanner(bytes.NewReader(b))
 		for scanner.Scan() {
 			entry := scanner.Entry()
+			if entry.Filename != "" && !strings.Contains(fname, entry.Filename) {
+				continue
+			}
+
 			if !entry.Valid {
 				continue
 			}
@@ -605,8 +615,10 @@ func (h *langHandler) handle(ctx context.Context, conn *jsonrpc2.Conn, req *json
 func replaceCommandInputFilename(command, fname, rootPath string) string {
 	ext := filepath.Ext(fname)
 	ext = strings.TrimPrefix(ext, ".")
+	dirName, _ := filepath.Split(fname)
 
 	command = strings.Replace(command, "${INPUT}", fname, -1)
+	command = strings.Replace(command, "${INPUT_DIR}", dirName, -1)
 	command = strings.Replace(command, "${FILEEXT}", ext, -1)
 	command = strings.Replace(command, "${FILENAME}", filepath.FromSlash(fname), -1)
 	command = strings.Replace(command, "${ROOT}", rootPath, -1)
