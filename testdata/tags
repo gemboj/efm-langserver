@@ -306,7 +306,7 @@ fmt	langserver\handler.go	5;"	i	line:5
 fmt	main.go	6;"	i	line:6
 formatting	langserver\handle_text_document_formatting.go	29;"	m	access:private	ctype:langHandler	line:29	signature:(uri string)	type:[]TextEdit, error
 fromURI	langserver\handler.go	101;"	f	access:private	line:101	signature:(uri string)	type:string, error
-github.com/mattn/efm-langserver/langserver	main.go	14;"	i	line:14
+github.com/gemboj/efm-langserver/langserver	main.go	14;"	i	line:14
 github.com/mattn/go-unicodeclass	langserver\handle_text_document_definition.go	17;"	i	line:17
 github.com/mattn/go-unicodeclass	langserver\handle_text_document_hover.go	13;"	i	line:13
 github.com/reviewdog/errorformat	langserver\handle_text_document_symbol.go	15;"	i	line:15
